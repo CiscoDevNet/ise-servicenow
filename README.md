@@ -18,28 +18,6 @@ A customer has an inventory of their computers in ServiceNow and would like to e
 
 ## OUTLINE:
 
-# ServiceNow Integration with Cisco ISE
-
-## OVERVIEW
-
-This guide is intended to show how to allow the ServiceNow platform to use information from it&#39;s CMDB to update endpoint records within ISE. This guide will focus on the following use case:
-
-## USE CASE:
-
-A customer has an inventory of their computers in ServiceNow and would like to ensure that only those computers are allowed access to the network. ServiceNow will therefore inform Cisco ISE of the status of computer objects and ISE will have a policy to either drop ping (default) or allow access (if &quot;in inventory&quot;). In this case, the ServiceNow database will use the Status field with a value of &quot;Installed&quot; to indicate a device as being in the inventory (see screenshot):
-
-![](RackMultipart20220124-4-nvp436_html_a1f579b6ae0a0a16.png)
-
-## REQUIREMENTS:
-
-- ISE v2.4 or later (screenshots are ISE 3.1)
-- ServiceNow Instance (Orlando or later)
-- ServiceNow MID-Server with access to ISE PSN (TCP 80/443/9060)
-  - Instructions on how to install a MID Server can be found [here](https://docs.servicenow.com/bundle/quebec-servicenow-platform/page/product/mid-server/concept/mid-server-installation.html)
-  - Document MID Server details (used in Step 6)
-
-## OUTLINE:
-
       1. [Create ERS user account within ISE](#_1._CREATE_ERS)
       2. [Enable ERS Gateway within ISE](#_2._ENABLE_ERS)
       3. [Create Custom Attributes within ISE](#_3._CREATE_CUSTOM)
