@@ -28,9 +28,7 @@ A customer has an inventory of their computers in ServiceNow and would like to e
   - Get_GUI_By_MAC
   - Get_Endpoint_Details
   - Put_Endpoint_Update
-8. Script Automation within ServiceNow
-  - Defining the ServiceNow Script Class
-  - Defining the ServiceNow Business Rule
+8. Script Automation within ServiceNow (Script Class and Business Rule)
 9. Testing the Overall Solution
 
 ## STEP 1. Create ERS Account in ISE
