@@ -77,7 +77,7 @@ To verify that these new attributes have now been added to the ISE endpoint data
 
 Under Attributes, click the Custom Attributes tab
 
-![](images/CreateCustomAttributes2).png) ![](images/createCustomAttributes3.png)
+![](images/CreateCustomAttributes2.png) ![](images/createCustomAttributes3.png)
 
 NOTE: By default these new values will be blank on all endpoints, including the Boolean "InventoryStatus". This will become relevant later in the tutorial.
 
