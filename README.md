@@ -18,27 +18,20 @@ A customer has an inventory of their computers in ServiceNow and would like to e
 
 ## OUTLINE:
 
-1. Create ERS user account within ISE(#_1._CREATE_ERS)
-2. Enable ERS Gateway within ISE(#_2._ENABLE_ERS)
-3. Create Custom Attributes within ISE(#_3._CREATE_CUSTOM)
-4. Create new Policy Conditions and AuthZ Profile(#_4._CREATE_NEW)
-5. Verify ERS Functionality via Postman(#_5._Verify_ERS)
-6. Create MID Server app / Bind App to MID Server on Prem(#_6._CREATE_NEW)
-7. Create the REST API queries in ServiceNow(#_7._CREATE_THE)
-  1. Get_GUI_By_MAC(#_Create_a_new)
-  2. Get_Endpoint_Details(#_Create_new_HTTP)
-  3. Put_Endpoint_Update(#_Create_new_HTTP_1)
-8. Script Automation within ServiceNow(#_8._Script_Automation)
-  1. Defining the ServiceNow Script Class(#_Define_the_ServiceNow)
-  2. Defining the ServiceNow Business Rule(#_Define_the_ServiceNow_1)
-9. Testing the Overall Solution(#_9._Testing_the)
-
-Troubleshooting(#_TROUBLESHOOTING)
-Appendix 1(#_APPENDIX_1:_ISE_Helper)
-Appendix 2
-
-## Create ERS user account within ISE
-
+1. Create ERS user account within ISE
+2. Enable ERS Gateway within ISE
+3. Create Custom Attributes within ISE
+4. Create new Policy Conditions and AuthZ Profile
+5. Verify ERS Functionality via Postman
+6. Create MID Server app / Bind App to MID Server on Prem
+7. Create the REST API queries in ServiceNow
+  - Get_GUI_By_MAC
+  - Get_Endpoint_Details
+  - Put_Endpoint_Update
+8. Script Automation within ServiceNow
+  - Defining the ServiceNow Script Class
+  - Defining the ServiceNow Business Rule
+9. Testing the Overall Solution
 
 ## STEP 1. CREATE ERS Account in ISE
 
