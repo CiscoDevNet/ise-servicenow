@@ -1,0 +1,131 @@
+var ISE_Helper = Class.create();
+ISE_Helper.prototype = {
+    initialize: function() {},
+
+    fnUpdateISE: function(grNetworkAdapter, grComputer, event) {
+        if (typeof(grNetworkAdapter.getUniqueValue()) == 'undefined') {
+            var grLocalNA = new GlideRecord('cmdb_ci_network_adapter');
+            grLocalNA.get(grNetworkAdapter);
+            grNetworkAdapter = grLocalNA;
+        }
+        if (typeof(grComputer.getUniqueValue()) == 'undefined') {
+            var grLocalComputer = new GlideRecord('cmdb_ci_computer');
+            grLocalComputer.get(grComputer);
+            grComputer = grLocalComputer;
+        }
+        var strSerial = grComputer.serial_number.toString();
+	
+	//--- THIS VARIABLE TO BE SUBSTITUTED BY COMPUTER OBJECT.  “Install = true”, all others “false”
+	var strInstallStatus = grComputer.install_status.toString();
+        
+	var strInventoried = "false";
+        var GUIDendpoint = "";
+        if ((!grNetworkAdapter.correlation_id) || (event.parm1.toString() === 'true')) {
+            var getOBJviaMAC = this.fnGetGUIDviaMAC(grNetworkAdapter.mac_address.toString());
+            if (getOBJviaMAC !== 'error') {
+                GUIDendpoint = this.fnParseGUID(getOBJviaMAC);
+                grNetworkAdapter.correlation_id = GUIDendpoint;
+            }
+        } else {
+            GUIDendpoint = grNetworkAdapter.correlation_id.toString();
+        }
+        var strSerialSource = "ServiceNow";
+        if (strInstallStatus === '1') {
+            strInventoried = "true";
+        } else {
+            strInventoried = "false";
+        }
+        var strInventoryDisplay = null;
+        if (strInventoried === "true") {
+            strInventoryDisplay = "PASS";
+        } else {
+            strInventoryDisplay = "FAIL (Internet access may be blocked)";
+        }
+        var PUTResponse = this.fnPUTEndpointDetails(GUIDendpoint, strSerial, strSerialSource, strInventoried, event, grNetworkAdapter);
+        if (typeof PUTResponse === "undefined") {
+        }
+        if ((PUTResponse.toString() === '404') && (event.parm1.toString() !== 'true')) {
+            strInventoryDisplay = "Error finding endpoint in ISE. Retrying once...";
+        } else if ((PUTResponse.toString() === '404') && (event.parm1.toString() === 'true')) {
+            strInventoryDisplay = "Error finding endpoint in ISE on 2nd attempt. Aborting.";
+        } else if (event.parm1.toString() === 'true') {
+            strInventoryDisplay = strInventoryDisplay + " (refreshed correlation ID)";
+        }
+        grNetworkAdapter.u_correlation_last_check = gs.now().toString();
+        grNetworkAdapter.comments = "ISE: " + (new GlideDateTime()).getDisplayValueInternal() + " " + strInventoryDisplay;
+        grNetworkAdapter.autoSysFields(false); // records shouldn't receive system updates
+        grNetworkAdapter.setWorkflow(false); // business rules shouldn't be run
+        grNetworkAdapter.update();
+        grNetworkAdapter.autoSysFields(true); // records shouldn't receive system updates
+        grNetworkAdapter.setWorkflow(true); // business rules shouldn't be run
+    },
+
+    fnGetGUIDviaMAC: function(strMAC) {
+        try {
+            var r = new sn_ws.RESTMessageV2('ISE-SVR', 'Get_GUI_By_MAC');
+            r.setStringParameterNoEscape('mac', strMAC);
+            r.setEccParameter('skip_sensor', true);
+            var response = r.execute();
+            var responseBody = response.getBody();
+            var httpStatus = response.getStatusCode();
+            return responseBody;
+        } catch (ex) {
+            var message = ex.message;
+            return "error";
+        }
+    },
+
+    // parse out GUID
+    fnParseGUID: function(responseBody) {
+        var parser = new global.JSON();
+        var obj = parser.decode(responseBody);
+        if (!obj.hasOwnProperty('SearchResult')) {
+            return null;
+        } else {
+            return obj.SearchResult.resources[0].id.toString();
+        }
+    },
+
+    // get details of endpoint via GUID
+    fnGetEndpointDetails: function(GUIDendpoint) {
+        try {
+            var r = new sn_ws.RESTMessageV2('ISE-SVR', 'GET_Endpoint_Details');
+            r.setStringParameterNoEscape('GUIDEndpoint', GUIDendpoint);
+            r.setEccParameter('skip_sensor', true);
+            var response = r.execute();
+            var responseBody = response.getBody();
+            var httpStatus = response.getStatusCode();
+            return responseBody;
+        } catch (ex) {
+            var message = ex.message;
+        }
+    },
+
+    fnPUTEndpointDetails: function(GUIDendpoint, SerialNumber, SerialSource, InventoryStatus, event, grNetworkAdapter) {
+        try {
+            var r = new sn_ws.RESTMessageV2('ISE-SVR', 'PUT_Endpoint_Update');
+            r.setStringParameterNoEscape('SerialNumber', SerialNumber);
+            r.setStringParameterNoEscape('GUIDendpoint', GUIDendpoint);
+            r.setStringParameterNoEscape('SerialSource', SerialSource);
+            r.setStringParameterNoEscape('InventoryStatus', InventoryStatus);
+            r.setEccParameter('skip_sensor', true);
+            var response = r.execute();
+            var responseBody = response.getBody();
+            var httpStatus = response.getStatusCode();
+            if (httpStatus === 404) {
+                // only try to update once, otherwise we endless loop
+                if (event.parm1.toString() !== 'true') {
+		     //~~! Additional logic for adding event-queue based functionality
+                    //gs.eventQueue('sn.itsm.ise.update', grNetworkAdapter, true, grNetworkAdapter.mac_address);
+                }
+            }
+            //			return "ISE PUT success";
+        } catch (ex) {
+            var message = ex.message;
+            //			return "ISE PUT failed";
+        }
+        return httpStatus;
+    },
+
+    type: 'ISE_Helper'
+};
