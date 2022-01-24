@@ -87,11 +87,11 @@ Navigate to Policy -> Policy Sets and we will create two rules (a permit and a d
 
 ![](images/createAuthZrule1.png)
 
+**NOTE: Since the default value for the "InventoryStatus" field for all endpoints is blank, these rules would need to target specific device types (Workstations, etc.) to avoid blocking all devices when this feature is enabled.**
+
 The resulting rules should look like the following:
 
 ![](images/createAuthZrule2.png)
-
-**NOTE: Since the default value for the "InventoryStatus" field for all endpoints is blank, these rules would need to target specific device types (Workstations, etc.) to avoid blocking all devices when this feature is enabled.**
 
 In this example, the AuthZ rule "DROP\_PING" pushes a dACL that drops PING traffic for the workstation. However, this could be customized in a variety of ways including a redirect to a splash page that informs the user their device is not in the inventory.
 
@@ -103,26 +103,23 @@ Now that ISE rules/policies have been setup, let&#39;s test the functionality us
 
 1. Create a new collection for ISE ERS connectivity.
 2. Create a new request inside the collection and name it Endpoint By MAC
-  1. Set the value of the request to "GET" with a URL of https://\&lt;ISE\&gt;:9060/ers/config/endpoint
+  2a. Set the value of the request to "GET" with a URL of https://<ISE:PAN>:9060/ers/config/endpoint
+  2b. Under Params, add the key "filter"; with a value of "mac.EQ.<your mac>" which includes a MAC address in your ISE instance.
+   ![](images/postman1.png)
+   
+  The URL now should read: https://<ISE:PAN>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
 
+  2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
+   ![](images/postman2.png)
+  2d. In the Headers section, add the following
+   ![](images/postman3.png)
+  2e. Click the "Send" button. The output should be similar to below.
+   ![](images/postman4).png)
+  
+  The ID returned is the GUID. We will need to copy this value for the next step.
 
-  2. Under Params, add the key &#39;filter&#39; with a value of "mac.EQ.\&lt;your mac\&gt;" which includes a MAC address in your ISE instance.
- ![](RackMultipart20220124-4-nvp436_html_38cca0dbe55f5ea1.png)
-
-The URL now should read: https://\&lt;ISE\&gt;:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
-
-  1. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in [Step 1](#_1._CREATE_ERS)
- ![](RackMultipart20220124-4-nvp436_html_5139542057e1c193.png)
-  2. In the Headers section, add the following
- ![](RackMultipart20220124-4-nvp436_html_c5f372ce74211c11.png)
-  3. Click the "Send" button. The output should be similar to below.
-
-![](RackMultipart20220124-4-nvp436_html_2f82c5ec99b3dedc.png)
-
-The ID returned is the GUID. We will need to copy this value for the next step.
-
-1. Click the ellipsis next to the existing GET request and create a duplicate, and name it "Endpoint by UID"
-  1. Set the URL value to https://\&lt;ISE\&gt;:9060/ers/config/endpoint/\&lt;GUID\&gt;
+3. Click the ellipsis next to the existing GET request and create a duplicate, and name it "Endpoint by GUID"
+  1. Set the URL value to https://<ISE>:9060/ers/config/endpoint/<GUID>
  ![](RackMultipart20220124-4-nvp436_html_26fc0a20125aaecf.png)
   2. Since you duplicated this request, the Authorization and Headers sections are already populated.
   3. Click the "Send" button. The output should be similar to below:
@@ -132,7 +129,7 @@ The ID returned is the GUID. We will need to copy this value for the next step.
 NOTE: The Custom Attributes fields for this specific endpoint are returned with blank values.
 
 1. Click the ellipsis next to "Endpoint by GUID" and create a duplicate and name it "Update Endpoint by UID"
-  1. Set the request type to "PUT" and the URL should remain in the same format as the previous "GET" request (ex. https://\&lt;ISE\&gt;:9060/ers/config/endpoint/\&lt;GUID\&gt;
+  1. Set the request type to "PUT" and the URL should remain in the same format as the previous "GET" request (ex. https://<ISE>:9060/ers/config/endpoint/<GUID>
   2. We will now be sending additional information in the ERS message, so we need to modify the format. Click on the Headers section and add a value of "Content-Type" with value "application/json"
  ![](RackMultipart20220124-4-nvp436_html_70592f9f331d1099.png)
 
@@ -191,7 +188,7 @@ Name: ISE-SVR
 
 Accessible from: This application only
  Authentication – Type: Basic
- Endpoint: [https://\&lt;ISE\&gt;:9060/ers/config](https://ise31a.securitydemo.net:9060/ers/config)
+ Endpoint: [https://<ISE>:9060/ers/config](https://ise31a.securitydemo.net:9060/ers/config)
 
 ![](RackMultipart20220124-4-nvp436_html_6284f44cf5d2867c.png)
 
@@ -213,7 +210,7 @@ Now that the basic message format is created, we will create the individual call
 1.
 ### Create a new HTTP Method called "Get\_GUI\_By\_MAC"
 
-  1. Set the Endpoint HTTP method to be https://\&lt;ise\&gt;:9060/ers/config/endpoint
+  1. Set the Endpoint HTTP method to be https://<ise>:9060/ers/config/endpoint
   2. Set Authentication to "Inherit from parent" ![](RackMultipart20220124-4-nvp436_html_3e76c71c35c3380b.png)
   3. Click the HTTP Request tab. For Use MID Server, click the search button to select your MID Server instance within ServiceNow that will run this request.
  ![](RackMultipart20220124-4-nvp436_html_5336c8888ed7d677.png)
@@ -239,7 +236,7 @@ Find the GUID for the MAC is returned, "9b3cafc….". Copy this value for the ne
 
 Name: GET\_Endpoint\_Details
  HTTP Method: GET
- Endpoint: https://\&lt;ise\&gt;:9060/ers/config/endpoint/${GUIDendpoint}
+ Endpoint: https://<ise>:9060/ers/config/endpoint/${GUIDendpoint}
  Authentication Type: Inherit from Parent
  ![](RackMultipart20220124-4-nvp436_html_1556044edf63d0f3.png)
 
@@ -252,7 +249,7 @@ Name: GET\_Endpoint\_Details
 
 Name: GUIDendpoint
 
-Test value: \&lt;sample GUID for example MAC from above\&gt;
+Test value: <sample GUID for example MAC from above>
  ![](RackMultipart20220124-4-nvp436_html_835c3c63a1100f25.png)
 
   1. Click the "Test" button under Related Links and confirm the output looks like the following:
@@ -267,7 +264,7 @@ Test value: \&lt;sample GUID for example MAC from above\&gt;
 Name: "PUT\_Endpoint\_Update"
  HTTP Method: "PUT"
 
-Endpoint: https://\&lt;ise\&gt;:9060/ers/config/endpoint/${GUIDendpoint}
+Endpoint: https://<ise>:9060/ers/config/endpoint/${GUIDendpoint}
  Authentication Type: Inherit from Parent
 
   1. Click the HTTP Request tab and ensure the appropriate MID server is selected.
@@ -422,7 +419,7 @@ Click on the "HTTP Request Tab" and next to USE MID Server, hover over the "Info
 
 ![](RackMultipart20220124-4-nvp436_html_5fda557a9a6a07eb.png)
 
-If the Server Status is "Down" but you have verified the box is online, make sure the MID Service is running on the Server (Start -> Services -> ServiceNow MID Server\_ISE\_\&lt;name\&gt;)
+If the Server Status is "Down" but you have verified the box is online, make sure the MID Service is running on the Server (Start -> Services -> ServiceNow MID Server\_ISE\_<name>)
 
 ![](RackMultipart20220124-4-nvp436_html_6c4087dd1dd1084c.png)
 
