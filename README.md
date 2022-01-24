@@ -259,8 +259,9 @@ Now that the basic message format is created, we will create the individual call
       }
     }
   }
-  ![](images/snowHTTPput3.png)
   ```
+  ![](images/snowHTTPput3.png)
+  
   4. Scroll down to the Variable Substitutions section. Here we will define (4) variables that will be used in this query (referenced in the code from the previous step):
   **Name**: GUIDendpoint, **value** = GUID **value** from previous query ![](images/snowHTTPput4.png)
   **Name**: Inventory Status, **value** = true
@@ -366,10 +367,13 @@ If the Server Status is "Down" but you have verified the box is online, make sur
 
 ![](images/tshoot2-3.png)
 
-**If it is not running, start the process. Wait a few moments, refresh the ServiceNow page and check the status again:**
-
+**If the service is not running, right click and select "Start". Wait a few moments, refresh the ServiceNow page and check the status again:**
 ![](images/tshoot2-4.png)
 
-**Scenario 2**: Receive HTTP response other than 200.
+**Scenario 3**: Receive HTTP response other than 200.
 
-**SOLUTION** : Verify configuration of required queries/headers for REST message
+**SOLUTION** : Verify configuration of required queries/headers for REST message.  Recreate/debug with Postman as necessary.
+
+##AUTHOR
+
+Taylor Cook (Cisco)
