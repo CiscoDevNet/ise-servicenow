@@ -110,14 +110,13 @@ Now that ISE rules/policies have been setup, let&#39;s test the functionality us
   The URL now should read: https://<ISE:PAN>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
 
   2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
-   ![](images/postman2.png)
+  ![](images/postman2.png)
   2d. In the Headers section, add the following
-   ![](images/postman3.png)
+  ![](images/postman3.png)
   2e. Click the "Send" button. The output should be similar to below.
-   ![](images/postman4).png)
+  ![](images/postman4).png)
   
   The ID returned is the GUID. We will need to copy this value for the next step.
-
 3. Click the ellipsis next to the existing GET request and create a duplicate, and name it "Endpoint by GUID"
   1. Set the URL value to https://<ISE>:9060/ers/config/endpoint/<GUID>
  ![](RackMultipart20220124-4-nvp436_html_26fc0a20125aaecf.png)
