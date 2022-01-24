@@ -33,7 +33,7 @@ A customer has an inventory of their computers in ServiceNow and would like to e
   - Defining the ServiceNow Business Rule
 9. Testing the Overall Solution
 
-## STEP 1. CREATE ERS Account in ISE
+## STEP 1. Create ERS Account in ISE
 
 From the ISE Admin portal, navigate to Administration -> System -> Admin Access -> Administrators -> Admin Users and click on "Add" -> "Create an Admin User"
 
@@ -43,7 +43,7 @@ Assign this user the "ERS Admin" role and click Submit
 
 ![](images/createERSadmin2.png)
 
-## STEP 2. ENABLE ERS Gateway within ISE
+## STEP 2. Enable ERS Gateway within ISE
 
 Navigate to Administration -> System -> Settings -> API Settings
 
@@ -367,6 +367,6 @@ If the Server Status is "Down" but you have verified the box is online, make sur
 
 **SOLUTION** : Verify configuration of required queries/headers for REST message.  Recreate/debug with Postman as necessary.
 
-##AUTHOR
+## AUTHOR:
 
 Taylor Cook (Cisco)
