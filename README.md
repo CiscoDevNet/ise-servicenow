@@ -207,7 +207,7 @@ Now that the basic message format is created, we will create the individual call
   7. Now we can perform a test run of the MID server communication to the ISE PAN via ERS call. Under Related Links, click the "Test" button.
   ![](images/snowRESTcall6.png)
 
-  After a few moments, a new screen displays the Test Results including the GUID value (copy this). 
+  After a few moments, a new screen displays the Test Results including the GUID value (copy this returned output). 
   ![](images/snowRESTcall7.png)
 
   Find the GUID for the MAC is returned, "9b3cafc….". Copy this value for the next step.
@@ -273,116 +273,103 @@ Now that the basic message format is created, we will create the individual call
   5. Click the "Test" button under Related Links. The output should look like the following:
    ![](images/snowHTTPput6.png)
 
-4. To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
+### Verify ServiceNow + ISE Integration
+To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
  ![](images/snowHTTPputVerify.png)
 
 ## STEP 8. Script Automation within ServiceNow
 
-Now that we have successfully tested the REST API calls from ServiceNow to update ISE, we need to automate this process based on ServiceNow workflows. To do this, we need to build two components:
+Now that we have successfully tested the REST API calls from ServiceNow to update ISE, we need to automate this process based on ServiceNow workflows. To do this, we need to build two components: a **Script Class**, and a **Business Rule**.  The **Script Class** accepts details from the CMDB, calls the REST messages, and parses the output.  The **Business Rule** defines what actions within ServiceNow will trigger the **Script Class**.
 
-1) Script Class – accepts details from the CMDB, calls the REST messages, and parses the output
+  1. Define the ServiceNow Script Class
+  Navigate to "System Definition -> Script Includes" and click "New", name it "ISE_Helper" , select the Accessible from "This Application scope only", check the box for "Active", and then use the script for "ISE Helper" located in this repo. The result should look similar to the screenshot below:
+ ![](images/snowAutomation1.png)
 
-2) Business Rule – define what action within ServiceNow will trigger Script Class
+  2. Define the ServiceNow Business Rule
+  In this scenario, we want the ServiceNow process to run whenever a new Network Adapter entry is added to the ServiceNow CMDB. Other options can be selected per use case.
+  
+  Navigate to "Business Rules" and click "New". Populate the following fields:
+  **Name**: ISE_Network_Adapter
+  **Active**: Enabled
+  **Advanced**: Enabled
+  **When to Run**: When "After" an "Insert"
+  ![](images/snowAutomation2.png)
 
-1.
-## Define the ServiceNow Script Class
+  Click on the "Advanced" tab and add script labeled "ISE_Network_Adapter" located in this repo.  This script will use the information from the Network_Adapter table, send it to the Script Class, and then return the results.
 
-Navigate to "System Definition -> Script Includes" and click "New", name it "ISE_Helper" , select the Accessible from "This Application scope only", check the box for "Active", and then use the script from the [appendix](#_APPENDIX_1:_ISE_Helper). The result should look similar to the screenshot below:
-
- ![](RackMultipart20220124-4-nvp436_html_5292315580e2faa1.png)
-
-1.
-## Define the ServiceNow Business Rule
-
-In this scenario, we want the ServiceNow process to run whenever a new Network Adapter entry is added to the ServiceNow CMDB. Other options can be selected per use case.
-
-Navigate to "Business Rules" and click "New". Populate the following fields:
- Name: ISE_Network_Adapter
-
-Active: Enabled
-
-Advanced: Enabled
-
-When to Run: When "After" an "Insert"
-
-![](RackMultipart20220124-4-nvp436_html_13740b9ece3c134c.png)
-
-Click on the "Advanced" tab and add the following script (Appendix 2) that will use the information from the Network_Adapter table, send it to the Script Class, and then return the results.
-
-## 9. Testing the Overall Solution
+## STEP 9. Testing the Overall Solution
 
 Using our test MAC address from before, let's go back to the ISE dashboard and remove the custom attributes that exist for our test device, BB:BB:BB:BB:BB:BB.
 
 Navigate to Context Visibility -> Endpoints -> select MAC address -> edit endpoint. Open Custom Attributes, and click the small "trash can" icon for each of the three attributes to clear them. Then click Save.
-
-![](RackMultipart20220124-4-nvp436_html_63fb65c379b33274.png) ![](RackMultipart20220124-4-nvp436_html_40061877e0ebc677.png)
+![](images/snowAutomation3.png) ![](images/snowAutomation4.png)
 
 In ServiceNow, navigate to the Configuration -> Computers window to view the active endpoints in the CMDB.
 
-![](RackMultipart20220124-4-nvp436_html_855dff75b29b8a46.png)
+![](images/snowAutomation5.png)
 
 For our example, we will use "Computer1". Click on the computer name to open the Computer record.
 
-![](RackMultipart20220124-4-nvp436_html_cfa29a16adcef875.png)
+![](images/snowAutomation6.png)
 
-NOTE: This computer is currently in an "Installed" status and has a serial number of "123456".
+**NOTE**: This computer is currently in an "Installed" status and has a serial number of "123456".
 
 Scroll down to the Network Adapters section. This section shows all of the associated MAC addresses with this workstation. In this case, there are no MAC addresses associated to this endpoint, so we will add one.
 
-![](RackMultipart20220124-4-nvp436_html_354275bd5ff634dd.png)
+![](images/snowAutomation7.png)
 
 Click "New" and input the value of "BB:BB:BB:BB:BB:BB" for the MAC address field. The other fields are not necessary to modify at this time. Click the "Submit" button.
 
-![](RackMultipart20220124-4-nvp436_html_82d8bd00ccfac99d.png)
+![](images/snowAutomation8.png)
 
 After clicking "Submit", recall that this is an Insertion into the Network Adapter table, so therefore the Business Rule will be triggered on the backend. After a few moments, you will see the result of the API calls:
 
-![](RackMultipart20220124-4-nvp436_html_aa7b50b32568192a.png)
+![](images/snowAutomation9.png)
 
 In this case, we see the "PASS" for the update of the MAC address of "BB:BB:BB:BB:BB:BB".
 
 Again, verify in ISE by going to Context Visibility -> Endpoints and view the details of that MAC address.
 
-![](RackMultipart20220124-4-nvp436_html_38df2ba47e396699.png)
+![](images/snowAutomation10.png)
 
-As soon as the device re-authenticates, it will now hit the Policy Condition that we created earlier that will check the "InventoryStatus = true". NOTE: This does not happen automatically. The client re-auth can either be initiated by the client (disconnect/reconnect, or timed re-auth), or manually triggered CoA by an admin through the ISE Admin console.
+As soon as the device re-authenticates, it will now hit the Policy Condition that we created earlier that will check the "InventoryStatus = true". **NOTE**: This does not happen automatically. The client re-auth can either be initiated by the client (disconnect/reconnect, or timed re-auth), or manually triggered CoA by an admin through the ISE Admin console.
 
 In this case, we were using a test MAC address so we can't show the live logs of this MAC, but here is an example of an actual device who's access was modified by this same process after re-authentication:
 
-![](RackMultipart20220124-4-nvp436_html_b7c7a9e6bd9224b1.png)
+![](images/snowAutomation11.png)
 
 ## TROUBLESHOOTING
 
-Scenario 1: ServiceNow updates ISE fields, but sets InventoryStatus to "False" instead of "True".
+**Scenario 1 - ISSUE**: ServiceNow updates ISE fields, but sets InventoryStatus to "False" instead of "True".
 
-**SOLUTION:** Verify that the computer object within ServiceNow has a Status value set to "Installed". The Script Class is configured to utilize this property when updating NICs. This means that if you have the variable set to another value, (ex. Absent), then ServiceNow will interpret this as an object that is not in the inventory. For example, the Computer object below would update SerialNumber details, but set Inventory Status to "False"
+**Scenario 1 - SOLUTION:** Verify that the computer object within ServiceNow has a Status value set to "Installed". The Script Class is configured to utilize this property when updating NICs. This means that if you have the variable set to another value, (ex. Absent), then ServiceNow will interpret this as an object that is not in the inventory. For example, the Computer object below would update SerialNumber details, but set Inventory Status to "False"
 
-![](RackMultipart20220124-4-nvp436_html_7c624d84c14c4270.png) ![](RackMultipart20220124-4-nvp436_html_2d3737e074540c22.png)
+![](images/tshoot1-1.png) ![](images/shoot1-2.png)
 
 Also, the message dialog after an ISE update should reflect this behavior with "Inventory Status: FAIL"
 
-![](RackMultipart20220124-4-nvp436_html_a847c00a036c116.png)
+![](images/tshoot1-3.png)
 
-Scenario 2: Receive HTTP response other than 200.
+**Scenario 2 - ISSUE**: Receive "No response" for ECC Message Request within ServiceNow
 
-**SOLUTION** : Verify configuration of required queries/headers for REST message
+![](images/tshoot2-1.png)
 
-Scenario 3: Receive "No response" for ECC Message Request within ServiceNow
-
-![](RackMultipart20220124-4-nvp436_html_1f1024e8f1dd7554.png)
-
-**SOLUTION:** Verify that the MID Server associated to the ISE REST messages is currently in a running state.
+**Scenario 2 - SOLUTION**: Verify that the MID Server associated to the ISE REST messages is currently in a running state.
 
 Navigate to Outbound -> REST Message -> ISE_Helper -> Get_GUI_By_MAC method
 
 Click on the "HTTP Request Tab" and next to USE MID Server, hover over the "Info" button to see the current status of the MID Server.
 
-![](RackMultipart20220124-4-nvp436_html_5fda557a9a6a07eb.png)
+![](images/tshoot2-2.png)
 
 If the Server Status is "Down" but you have verified the box is online, make sure the MID Service is running on the Server (Start -> Services -> ServiceNow MID Server_ISE_<name>)
 
-![](RackMultipart20220124-4-nvp436_html_6c4087dd1dd1084c.png)
+![](images/tshoot2-3.png)
 
 **If it is not running, start the process. Wait a few moments, refresh the ServiceNow page and check the status again:**
 
-![](RackMultipart20220124-4-nvp436_html_9f73f1526b4033db.png)
+![](images/tshoot2-4.png)
+
+**Scenario 2**: Receive HTTP response other than 200.
+
+**SOLUTION** : Verify configuration of required queries/headers for REST message
