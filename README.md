@@ -97,113 +97,95 @@ In this example, the AuthZ rule "DROP\_PING" pushes a dACL that drops PING traff
 
 ## 5. Verify ERS Functionality via Postman
 
-Now that ISE rules/policies have been setup, let&#39;s test the functionality using Postman. Reminder that we will need to search for the MAC address of the endpoint for our inventory to obtain the GUID for the record within ISE. This GUID will then be used to gather additional details about the endpoint and/or update the endpoint record.
+Now that ISE rules/policies have been setup, let's test the functionality using Postman. Reminder that we will need to search for the MAC address of the endpoint for our inventory to obtain the GUID for the record within ISE. This GUID will then be used to gather additional details about the endpoint and/or update the endpoint record.
 
 [Click here for a tutorial on how to use Postman](https://learning.postman.com/docs/getting-started/introduction/)
 
 1. Create a new collection for ISE ERS connectivity.
 2. Create a new request inside the collection and name it Endpoint By MAC 
-    - 2a. Set the value of the request to "GET" with a URL of https://<ISE:PAN>:9060/ers/config/endpoint
+    - 2a. Set the value of the request to "GET" with a URL of https://<ISE>:9060/ers/config/endpoint
     - 2b. Under Params, add the key "filter"; with a value of "mac.EQ.<your mac>" which includes a MAC address in your ISE instance.
     ![](images/postman1.png)
     
-    The URL now should read: https://<ISE:PAN>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
+    The URL now should read: https://<ISE>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
     - 2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
-![](images/postman2.png)
+    
+    ![](images/postman2.png)
 
-2d. In the Headers section, add the following
-![](images/postman3.png)
+    - 2d. In the Headers section, add the following
+    ![](images/postman3.png)
 
-2e. Click the "Send" button. The output should be similar to below.
-![](images/postman4).png)
+    - 2e. Click the "Send" button. The output should be similar to below.
+    ![](images/postman4).png)
+    
+    The ID returned is the GUID. We will need to copy this value for the next step.
 
-The ID returned is the GUID. We will need to copy this value for the next step.
 3. Click the ellipsis next to the existing GET request and create a duplicate, and name it "Endpoint by GUID"
-  1. Set the URL value to https://<ISE>:9060/ers/config/endpoint/<GUID>
- ![](RackMultipart20220124-4-nvp436_html_26fc0a20125aaecf.png)
-  2. Since you duplicated this request, the Authorization and Headers sections are already populated.
-  3. Click the "Send" button. The output should be similar to below:
+    - 3a. Set the URL value to https://<ISE>:9060/ers/config/endpoint/<GUID>
+    ![](images/postman5.png)
 
-![](RackMultipart20220124-4-nvp436_html_27810b09e139b401.png)
+    - 3b. Since you duplicated this request, the Authorization and Headers sections are already populated.
+    
+    - 3c. Click the "Send" button. The output should be similar to below:
+    ![](images/postman6.png)
 
-NOTE: The Custom Attributes fields for this specific endpoint are returned with blank values.
+    NOTE: The Custom Attributes fields for this specific endpoint are returned with blank values.
 
-1. Click the ellipsis next to "Endpoint by GUID" and create a duplicate and name it "Update Endpoint by UID"
-  1. Set the request type to "PUT" and the URL should remain in the same format as the previous "GET" request (ex. https://<ISE>:9060/ers/config/endpoint/<GUID>
-  2. We will now be sending additional information in the ERS message, so we need to modify the format. Click on the Headers section and add a value of "Content-Type" with value "application/json"
- ![](RackMultipart20220124-4-nvp436_html_70592f9f331d1099.png)
+4. Click the ellipsis next to "Endpoint by GUID" and create a duplicate and name it "Update Endpoint by UID"
+    - 4a. Set the request type to "PUT" and the URL should remain in the same format as the previous "GET" request (ex. https://<ISE>:9060/ers/config/endpoint/<GUID>
+    
+    - 4b. We will now be sending additional information in the ERS message, so we need to modify the format. Click on the Headers section and add a value of "Content-Type" with value "application/json"
+    ![](images/postman7.png)
+    - 4c. Click on the "Body" section. Here we will add values to update for this endpoint including the "true" value for the InventoryStatus, a test SerialNumber value, and the "ServiceNow" for SerialSource.
+    ![](images/postman8.png)
+    - 4d Click the "Send" button to issue the update. The returned output shows the old values of the record as well as the new values after this update.
+    ![](images/postman9.png)
 
-  1. Click on the "Body" section. Here we will add values to update for this endpoint including the "true" value for the InventoryStatus, a test SerialNumber value, and the "ServiceNow" for SerialSource.
+5. Within the ISE GUI, verify that the updates are reflected in the endpoint (Context Visibility -> Endpoints) 
+![](images/postmanVerify1.png)
 
-![](RackMultipart20220124-4-nvp436_html_44770b948897e209.png)
- {
+6. Now that we know the ERS functionality is working, let's clear the Custom Attribute values (Edit Endpoint-> click "trash" icon next to each value, click Save") for this endpoint to reset it back to normal. 
+![](images/postmanVerify2.png)
 
-"ERSEndPoint": {
+We will now perform the ServiceNow steps to do this same ERS update process.
 
-"id": "ac48cc90-1c7b-11ec-b265-9a9fc6c2c68a",
-
-"customAttributes":{
-
-"customAttributes" :{
-
-"InventoryStatus" : true,
-
-"SerialNumber": 123456,
-
-"SerialSource": "ServiceNow"
-
-}
-
-}
-
-}
-
-}
-
-  1. Click the "Send" button to issue the update. The returned output shows the old values of the record as well as the new values after this update.
- ![](RackMultipart20220124-4-nvp436_html_a5d1284338939594.png)
-1. Within the ISE GUI, verify that the updates are reflected in the endpoint (Context Visibility -> Endpoints) ![](RackMultipart20220124-4-nvp436_html_38df2ba47e396699.png)
-2. Now that we know the ERS functionality is working, let&#39;s clear the Custom Attribute values (Edit Endpoint-> click "trash" icon next to each value, click Save") for this endpoint to reset it back to normal. ![](RackMultipart20220124-4-nvp436_html_63fb65c379b33274.png)
- We will now perform the ServiceNow steps to do this same ERS update process.
-
-## 6. CREATE NEW MID SERVER APPLICATION / BIND APP TO MID SERVER ON PREM
+## 6. Create New MID Server Application / Bind App to MID Server on Prem
 
 In ServiceNow, navigate to MID Server -> Applications.
 
 Create the new Application in ServiceNow ("ISE-ERS") and bind it to the MID-Server (ex. "ISE\_mid\_server")
 
-![](RackMultipart20220124-4-nvp436_html_c5f362dc2574fe94.png)
+![](images/midServer1.png)
 
-![](RackMultipart20220124-4-nvp436_html_532b5b9189ddcaff.png)
+![](images/midServer2.png)
 
 This will be referenced later
 
-![](RackMultipart20220124-4-nvp436_html_7d899ff8b4be731.png)
+![](images/midServer3.png)
 
-## 7. CREATE THE REST API QUERIES IN SERVICE NOW
+## 7. Create the REST API Queries in ServiceNow
 
 We now need to recreate the API calls we performed in Postman into the ServiceNow API engine. To do this, navigate to Outbound -> REST Message and click "New". This will be the basis of all ISE queries so name it something accordingly:
 
-Name: ISE-SVR
+**Name**: ISE-SVR
+**Accessible From**: This application only
+**Authentication – Type**: Basic
+**Endpoint**: https://<ISE>:9060/ers/config
 
-Accessible from: This application only
- Authentication – Type: Basic
- Endpoint: [https://<ISE>:9060/ers/config](https://ise31a.securitydemo.net:9060/ers/config)
-
-![](RackMultipart20220124-4-nvp436_html_6284f44cf5d2867c.png)
+![](images/snowREST1.png)
 
 Click the search button next to Basic Auth Profile. Click "New" to create a new credential.
 
-![](RackMultipart20220124-4-nvp436_html_e78e8aa30eec7fe4.png)
+![](images/snowREST2.png)
 
 Here you will put in the ERS credentials that were created in ISE during step 1. Then click submit
 
-![](RackMultipart20220124-4-nvp436_html_cb0ab1fe9f5ab4f2.png)
+![](images/snowREST3.png)
 
-![](RackMultipart20220124-4-nvp436_html_7d899ff8b4be731.png)
+![](images/snowREST4.png)
 
 Click on the HTTP Request tab and add the key "Accept" with value "application/json"
- ![](RackMultipart20220124-4-nvp436_html_e26bc1c51b7d4e97.png)
+![](images/snowREST5.png)
 
 Now that the basic message format is created, we will create the individual calls:
 
@@ -214,7 +196,7 @@ Now that the basic message format is created, we will create the individual call
   2. Set Authentication to "Inherit from parent" ![](RackMultipart20220124-4-nvp436_html_3e76c71c35c3380b.png)
   3. Click the HTTP Request tab. For Use MID Server, click the search button to select your MID Server instance within ServiceNow that will run this request.
  ![](RackMultipart20220124-4-nvp436_html_5336c8888ed7d677.png)
-  4. Since HTTP headers are inherited from parent, we don&#39;t need to define them in this request.
+  4. Since HTTP headers are inherited from parent, we don't need to define them in this request.
   5. Under the HTTP Query field, double-click to Insert a new row. For the name type "filter" and for the value, type "mac.EQ.${mac}". ![](RackMultipart20220124-4-nvp436_html_b6ea98b024a27b51.png)
 
 This value will reference a variable that we will now define.
@@ -351,7 +333,7 @@ Click on the "Advanced" tab and add the following script (Appendix 2) that will 
 
 ## 9. Testing the Overall Solution
 
-Using our test MAC address from before, let&#39;s go back to the ISE dashboard and remove the custom attributes that exist for our test device, BB:BB:BB:BB:BB:BB.
+Using our test MAC address from before, let's go back to the ISE dashboard and remove the custom attributes that exist for our test device, BB:BB:BB:BB:BB:BB.
 
 Navigate to Context Visibility -> Endpoints -> select MAC address -> edit endpoint. Open Custom Attributes, and click the small "trash can" icon for each of the three attributes to clear them. Then click Save.
 
@@ -387,7 +369,7 @@ Again, verify in ISE by going to Context Visibility -> Endpoints and view the de
 
 As soon as the device re-authenticates, it will now hit the Policy Condition that we created earlier that will check the "InventoryStatus = true". NOTE: This does not happen automatically. The client re-auth can either be initiated by the client (disconnect/reconnect, or timed re-auth), or manually triggered CoA by an admin through the ISE Admin console.
 
-In this case, we were using a test MAC address so we can&#39;t show the live logs of this MAC, but here is an example of an actual device who&#39;s access was modified by this same process after re-authentication:
+In this case, we were using a test MAC address so we can't show the live logs of this MAC, but here is an example of an actual device who's access was modified by this same process after re-authentication:
 
 ![](RackMultipart20220124-4-nvp436_html_b7c7a9e6bd9224b1.png)
 
