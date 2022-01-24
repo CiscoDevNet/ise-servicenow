@@ -25,9 +25,9 @@ A customer has an inventory of their computers in ServiceNow and would like to e
 5. Verify ERS Functionality via Postman(#_5._Verify_ERS)
 6. Create MID Server app / Bind App to MID Server on Prem(#_6._CREATE_NEW)
 7. Create the REST API queries in ServiceNow(#_7._CREATE_THE)
-  1. Get\_GUI\_By\_MAC(#_Create_a_new)
-  2. Get\_Endpoint\_Details(#_Create_new_HTTP)
-  3. Put\_Endpoint\_Update(#_Create_new_HTTP_1)
+  1. Get_GUI_By_MAC(#_Create_a_new)
+  2. Get_Endpoint_Details(#_Create_new_HTTP)
+  3. Put_Endpoint_Update(#_Create_new_HTTP_1)
 8. Script Automation within ServiceNow(#_8._Script_Automation)
   1. Defining the ServiceNow Script Class(#_Define_the_ServiceNow)
   2. Defining the ServiceNow Business Rule(#_Define_the_ServiceNow_1)
@@ -50,7 +50,7 @@ Assign this user the "ERS Admin" role and click Submit
 
 ![](images/createERSadmin2.png)
 
-## 2. ENABLE ERS Gateway within ISE
+## STEP 2. ENABLE ERS Gateway within ISE
 
 Navigate to Administration -> System -> Settings -> API Settings
 
@@ -60,7 +60,7 @@ NOTE: Though not required for this tutorial, the screenshot below also shows Ope
 
 ![](images/enableERSgateway.png)
 
-## 3. Create Custom Attributes in ISE
+## STEP 3. Create Custom Attributes in ISE
 
 Navigate to Identity Management -> Settings -> Endpoint Custom Attributes and create three conditions:
 
@@ -81,7 +81,7 @@ Under Attributes, click the Custom Attributes tab
 
 NOTE: By default these new values will be blank on all endpoints, including the Boolean "InventoryStatus". This will become relevant later in the tutorial.
 
-## 4. Create New Authorization Conditions / AuthZ Profile
+## STEP 4. Create New Authorization Conditions / AuthZ Profile
 
 Navigate to Policy -> Policy Sets and we will create two rules (a permit and a deny rule) using the value of the new "InventoryStatus" custom attribute that will be populated by ServiceNow. When adding the condition for the each rule, you can search the Attribute field to quickly find the "InventoryStatus" field.
 
@@ -93,9 +93,9 @@ The resulting rules should look like the following:
 
 ![](images/createAuthZrule2.png)
 
-In this example, the AuthZ rule "DROP\_PING" pushes a dACL that drops PING traffic for the workstation. However, this could be customized in a variety of ways including a redirect to a splash page that informs the user their device is not in the inventory.
+In this example, the AuthZ rule "DROP_PING" pushes a dACL that drops PING traffic for the workstation. However, this could be customized in a variety of ways including a redirect to a splash page that informs the user their device is not in the inventory.
 
-## 5. Verify ERS Functionality via Postman
+## STEP 5. Verify ERS Functionality via Postman
 
 Now that ISE rules/policies have been setup, let's test the functionality using Postman. Reminder that we will need to search for the MAC address of the endpoint for our inventory to obtain the GUID for the record within ISE. This GUID will then be used to gather additional details about the endpoint and/or update the endpoint record.
 
@@ -149,11 +149,11 @@ Now that ISE rules/policies have been setup, let's test the functionality using 
 
 We will now perform the ServiceNow steps to do this same ERS update process.
 
-## 6. Create New MID Server Application / Bind App to MID Server on Prem
+## STEP 6. Create New MID Server Application / Bind App to MID Server on Prem
 
 In ServiceNow, navigate to MID Server -> Applications.
 
-Create the new Application in ServiceNow ("ISE-ERS") and bind it to the MID-Server (ex. "ISE\_mid\_server")
+Create the new Application in ServiceNow ("ISE-ERS") and bind it to the MID-Server (ex. "ISE_mid_server")
 
 ![](images/midServer1.png)
 
@@ -163,7 +163,7 @@ This will be referenced later
 
 ![](images/midServer3.png)
 
-## 7. Create the REST API Queries in ServiceNow
+## STEP 7. Create the REST API Queries in ServiceNow
 
 We now need to recreate the API calls we performed in Postman into the ServiceNow API engine. To do this, navigate to Outbound -> REST Message and click "New". This will be the basis of all ISE queries so name it something accordingly:
 
@@ -189,116 +189,94 @@ Click on the HTTP Request tab and add the key "Accept" with value "application/j
 
 Now that the basic message format is created, we will create the individual calls:
 
-1.
-### Create a new HTTP Method called "Get\_GUI\_By\_MAC"
+### Create a new HTTP Method called "Get_GUID_By_MAC"
 
-  1. Set the Endpoint HTTP method to be https://<ise>:9060/ers/config/endpoint
-  2. Set Authentication to "Inherit from parent" ![](RackMultipart20220124-4-nvp436_html_3e76c71c35c3380b.png)
+  1. Set the Endpoint HTTP method to be https://<ISE>:9060/ers/config/endpoint
+  2. Set Authentication to "Inherit from parent" 
+  ![](images/snowRESTcall1.png)
   3. Click the HTTP Request tab. For Use MID Server, click the search button to select your MID Server instance within ServiceNow that will run this request.
- ![](RackMultipart20220124-4-nvp436_html_5336c8888ed7d677.png)
+  ![](images/snowRESTcall2.png)
   4. Since HTTP headers are inherited from parent, we don't need to define them in this request.
-  5. Under the HTTP Query field, double-click to Insert a new row. For the name type "filter" and for the value, type "mac.EQ.${mac}". ![](RackMultipart20220124-4-nvp436_html_b6ea98b024a27b51.png)
+  5. Under the HTTP Query field, double-click to Insert a new row. For the name type "filter" and for the value, type "mac.EQ.${mac}". 
+  ![](images/snowRESTcall3.png)
+  This value will reference a variable that we will now define.
 
-This value will reference a variable that we will now define.
+  6. Under Variable Substitutions, click New. In the next screen, enter "mac" for the name, leave Escape Type to "no escaping" and set the test value to our example MAC address of BB:BB:BB:BB:BB, and then click Submit. 
+  ![](images/snowRESTcall4.png)
+  ![](images/snowRESTcall5.png)
+  7. Now we can perform a test run of the MID server communication to the ISE PAN via ERS call. Under Related Links, click the "Test" button.
+  ![](images/snowRESTcall6.png)
 
-  1. Under Variable Substitutions, click New. In the next screen, enter "mac" for the name, leave Escape Type to "no escaping" and set the test value to our example MAC address of BB:BB:BB:BB:BB, and then click Submit. ![](RackMultipart20220124-4-nvp436_html_7d94a543822f4b50.png)
- ![](RackMultipart20220124-4-nvp436_html_a3b727da38c79c3c.png)
-  2. Now we can perform a test run of the MID server communication to the ISE PAN via ERS call. Under Related Links, click the "Test" button.
+  After a few moments, a new screen displays the Test Results including the GUID value (copy this). 
+  ![](images/snowRESTcall7.png)
 
-![](RackMultipart20220124-4-nvp436_html_ac0f9376b9c1e75d.png)
+  Find the GUID for the MAC is returned, "9b3cafc….". Copy this value for the next step.
 
-After a few moments, a new screen displays the Test Results including the GUID value (copy this). ![](RackMultipart20220124-4-nvp436_html_dc09e6e449ee4fa8.png)
-
-Find the GUID for the MAC is returned, "9b3cafc….". Copy this value for the next step.
-
-1.
-### Create new HTTP Method Called "Get\_Endpoint\_Details"
-
-  1. Set the following values (replicating steps from the previous method:
-
-Name: GET\_Endpoint\_Details
- HTTP Method: GET
- Endpoint: https://<ise>:9060/ers/config/endpoint/${GUIDendpoint}
- Authentication Type: Inherit from Parent
- ![](RackMultipart20220124-4-nvp436_html_1556044edf63d0f3.png)
-
-  1. Click the HTTP Request tab and ensure the appropriate MID server is selected.
-
-![](RackMultipart20220124-4-nvp436_html_5336c8888ed7d677.png)
- No other settings are needed here
-
-  1. Under variable Substitutions, click New. In the next screen, enter the following:
-
-Name: GUIDendpoint
-
-Test value: <sample GUID for example MAC from above>
- ![](RackMultipart20220124-4-nvp436_html_835c3c63a1100f25.png)
-
-  1. Click the "Test" button under Related Links and confirm the output looks like the following:
-
-![](RackMultipart20220124-4-nvp436_html_8ba1b12dbb8e8d40.png)
-
-1.
-### Create new HTTP Method called "PUT\_Endpoint\_Update"
+### Create new HTTP Method Called "Get_Endpoint_Details"
 
   1. Set the following values (replicating steps from the previous method:
+  **Name**: GET_Endpoint_Details
+  **HTTP Method**: GET
+  **Endpoint**: https://<ISE>:9060/ers/config/endpoint/${GUIDendpoint}
+  **Authentication Type**: Inherit from Parent
+   ![](images/snowHTTPget1.png)
 
-Name: "PUT\_Endpoint\_Update"
- HTTP Method: "PUT"
+  2. Click the HTTP Request tab and ensure the appropriate MID server is selected.
+   ![](images/snowHTTPget2.png)
 
-Endpoint: https://<ise>:9060/ers/config/endpoint/${GUIDendpoint}
- Authentication Type: Inherit from Parent
+  3. Under variable Substitutions, click New. In the next screen, enter the following:
+  **Name**: GUIDendpoint
+  **Test Value**: <sample GUID for example MAC from above>
+   ![](images/snowHTTPget3.png)
 
-  1. Click the HTTP Request tab and ensure the appropriate MID server is selected.
+  4. Click the "Test" button under Related Links and confirm the output looks like the following:
+   ![](images/snowHTTPget4.png)
 
-![](RackMultipart20220124-4-nvp436_html_5336c8888ed7d677.png)
+### Create new HTTP Method called "PUT_Endpoint_Update"
 
-Under HTTP Headers, add a new field of "Content-Type" and value "application/json"
+  1. Set the following values (replicating steps from the previous method:
+  **Name**: "PUT_Endpoint_Update"
+  **HTTP Method**: "PUT"
+  **Endpoint**: https://<ISE>:9060/ers/config/endpoint/${GUIDendpoint}
+  **Authentication Type**: Inherit from Parent
 
-![](RackMultipart20220124-4-nvp436_html_53b5496342adbee4.png)
+  2. Click the HTTP Request tab and ensure the appropriate MID server is selected.
+  ![](images/snowHTTPput1.png)
+  Under HTTP Headers, add a new field of "Content-Type" and value "application/json"
+  ![](images/snowHTTPput2.png)
+  
+  3. Under HTTP Query Parameters, add the following into the "Content" window and click Update:
+  ```json
+  {
+    "ERSEndPoint": {
+      "id": "${GUIDendpoint}",
+      "customAttributes":{
+        "customAttributes" :{
+          "InventoryStatus" : ${InventoryStatus},
+          "SerialNumber": ${SerialNumber},
+          "SerialSource": "${SerialSource}"
+        }
+      }
+    }
+  }
+  ![](images/snowHTTPput3.png)
+  ```
+  4. Scroll down to the Variable Substitutions section. Here we will define (4) variables that will be used in this query (referenced in the code from the previous step):
+  **Name**: GUIDendpoint, **value** = GUID **value** from previous query ![](images/snowHTTPput4.png)
+  **Name**: Inventory Status, **value** = true
+  **Name**: SerialNumber, **value** = 987654 (Serial # different than Postman example)
+  **Name**: SerialSource, **value** = ServiceNow
+  
+  The end result should look like this 
+   ![](images/snowHTTPput5.png)
 
-  1. Under HTTP Query Parameters, add the following into the "Content" window and click Update:
+  5. Click the "Test" button under Related Links. The output should look like the following:
+   ![](images/snowHTTPput6.png)
 
-{
+4. To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
+ ![](images/snowHTTPputVerify.png)
 
-"ERSEndPoint": {
-
-"id": "${GUIDendpoint}",
-
-"customAttributes":{
-
-"customAttributes" :{
-
-"InventoryStatus" : ${InventoryStatus},
-
-"SerialNumber": ${SerialNumber},
-
-"SerialSource": "${SerialSource}"
-
-}
-
-}
-
-}
-
-}
-
-![](RackMultipart20220124-4-nvp436_html_e99fdfc54eed5cb3.png)
-
-  1. Scroll down to the Variable Substitutions section. Here we will define (4) variables that will be used in this query (referenced in the code from the previous step):
-    1. Name: GUIDendpoint, value = GUID value from previous query ![](RackMultipart20220124-4-nvp436_html_effa03cdd7b096b.png)
-    2. Name: Inventory Status, value = true
-    3. Name: SerialNumber, value = 987654 (Serial # different than Postman example)
-    4. Name: SerialSource, value = ServiceNow
-
-The end result should look like this ![](RackMultipart20220124-4-nvp436_html_3c3690ef9112ec8.png)
-
-  1. Click the "Test" button under Related Links. The output should look like the following:
- ![](RackMultipart20220124-4-nvp436_html_da12e7f6b7dfcd9f.png)
-1. To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
- ![](RackMultipart20220124-4-nvp436_html_4b1e7714c8484302.png)
-
-## 8. Script Automation within ServiceNow
+## STEP 8. Script Automation within ServiceNow
 
 Now that we have successfully tested the REST API calls from ServiceNow to update ISE, we need to automate this process based on ServiceNow workflows. To do this, we need to build two components:
 
@@ -309,7 +287,7 @@ Now that we have successfully tested the REST API calls from ServiceNow to updat
 1.
 ## Define the ServiceNow Script Class
 
-Navigate to "System Definition-> Script Includes" and click "New", name it "ISE\_Helper" , select the Accessible from "This Application scope only", check the box for "Active", and then use the script from the [appendix](#_APPENDIX_1:_ISE_Helper). The result should look similar to the screenshot below:
+Navigate to "System Definition -> Script Includes" and click "New", name it "ISE_Helper" , select the Accessible from "This Application scope only", check the box for "Active", and then use the script from the [appendix](#_APPENDIX_1:_ISE_Helper). The result should look similar to the screenshot below:
 
  ![](RackMultipart20220124-4-nvp436_html_5292315580e2faa1.png)
 
@@ -319,7 +297,7 @@ Navigate to "System Definition-> Script Includes" and click "New", name it "ISE\
 In this scenario, we want the ServiceNow process to run whenever a new Network Adapter entry is added to the ServiceNow CMDB. Other options can be selected per use case.
 
 Navigate to "Business Rules" and click "New". Populate the following fields:
- Name: ISE\_Network\_Adapter
+ Name: ISE_Network_Adapter
 
 Active: Enabled
 
@@ -329,7 +307,7 @@ When to Run: When "After" an "Insert"
 
 ![](RackMultipart20220124-4-nvp436_html_13740b9ece3c134c.png)
 
-Click on the "Advanced" tab and add the following script (Appendix 2) that will use the information from the Network\_Adapter table, send it to the Script Class, and then return the results.
+Click on the "Advanced" tab and add the following script (Appendix 2) that will use the information from the Network_Adapter table, send it to the Script Class, and then return the results.
 
 ## 9. Testing the Overall Solution
 
@@ -395,13 +373,13 @@ Scenario 3: Receive "No response" for ECC Message Request within ServiceNow
 
 **SOLUTION:** Verify that the MID Server associated to the ISE REST messages is currently in a running state.
 
-Navigate to Outbound -> REST Message -> ISE\_Helper -> Get\_GUI\_By\_MAC method
+Navigate to Outbound -> REST Message -> ISE_Helper -> Get_GUI_By_MAC method
 
 Click on the "HTTP Request Tab" and next to USE MID Server, hover over the "Info" button to see the current status of the MID Server.
 
 ![](RackMultipart20220124-4-nvp436_html_5fda557a9a6a07eb.png)
 
-If the Server Status is "Down" but you have verified the box is online, make sure the MID Service is running on the Server (Start -> Services -> ServiceNow MID Server\_ISE\_<name>)
+If the Server Status is "Down" but you have verified the box is online, make sure the MID Service is running on the Server (Start -> Services -> ServiceNow MID Server_ISE_<name>)
 
 ![](RackMultipart20220124-4-nvp436_html_6c4087dd1dd1084c.png)
 
