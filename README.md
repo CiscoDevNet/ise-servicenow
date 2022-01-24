@@ -6,7 +6,7 @@ This guide is intended to show how to allow the ServiceNow platform to use infor
 
 ## USE CASE:
 
-A customer has an inventory of their computers in ServiceNow and would like to ensure that only those computers are allowed access to the network. ServiceNow will therefore inform Cisco ISE of the status of computer objects and ISE will have a policy to either drop ping (default) or allow access (if Computuer is in the Inventory). In this case, the ServiceNow database will use the Status field with a value of "Installed"; to indicate a device as being in the inventory (see screenshot):
+A customer has an inventory of their computers in ServiceNow and would like to ensure that only those computers are allowed access to the network. ServiceNow will therefore inform Cisco ISE of the status of computer objects and ISE will have a policy to either drop ping (default) or allow access (if Computer is in the Inventory). In this case, the ServiceNow database will use the Status field with a value of "Installed"; to indicate a device as being in the inventory (see screenshot):
 ![](images/useCaseExample.png)
 
 ## REQUIREMENTS:
@@ -367,6 +367,6 @@ If the Server Status is "Down" but you have verified the box is online, make sur
 
 **SOLUTION** : Verify configuration of required queries/headers for REST message.  Recreate/debug with Postman as necessary.
 
-## AUTHOR:
+## AUTHOR
 
 Taylor Cook (Cisco)
