@@ -102,16 +102,13 @@ Now that ISE rules/policies have been setup, let&#39;s test the functionality us
 [Click here for a tutorial on how to use Postman](https://learning.postman.com/docs/getting-started/introduction/)
 
 1. Create a new collection for ISE ERS connectivity.
-2. Create a new request inside the collection and name it Endpoint By MAC
-
-2a. Set the value of the request to "GET" with a URL of https://<ISE:PAN>:9060/ers/config/endpoint
-
-2b. Under Params, add the key "filter"; with a value of "mac.EQ.<your mac>" which includes a MAC address in your ISE instance.
-![](images/postman1.png)
-
-The URL now should read: https://<ISE:PAN>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
-
-2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
+2. Create a new request inside the collection and name it Endpoint By MAC 
+    - 2a. Set the value of the request to "GET" with a URL of https://<ISE:PAN>:9060/ers/config/endpoint
+    - 2b. Under Params, add the key "filter"; with a value of "mac.EQ.<your mac>" which includes a MAC address in your ISE instance.
+    ![](images/postman1.png)
+    
+    The URL now should read: https://<ISE:PAN>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
+    - 2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
 ![](images/postman2.png)
 
 2d. In the Headers section, add the following
