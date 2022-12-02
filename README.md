@@ -9,11 +9,11 @@ This guide is intended to show how to allow the ServiceNow platform to use infor
 A customer has an inventory of their computers in ServiceNow and would like to ensure that only those computers are allowed access to the network. ServiceNow will therefore inform Cisco ISE of the status of computer objects and ISE will have a policy to either drop ping (default) or allow access (if Computer is in the Inventory). In this case, the ServiceNow database will use the Status field with a value of "Installed"; to indicate a device as being in the inventory (see screenshot):
 ![](images/useCaseExample.png)
 
-v1.0
---Update ISE endpoints with Custom Attributes in response to SNOW Network Adapter INSERT/UPDATE actions
-v2.0
---Delete ISE endpoint in response to SNOW Network Adapter DELETE action
---Create ISE endpoint in response to ‘Network Adapter’ INSERT action if MAC address does not already exist in ISE
+**v1.0** <br>
+--Update ISE endpoints with Custom Attributes in response to SNOW Network Adapter INSERT/UPDATE actions <br>
+**v2.0** <br>
+--Delete ISE endpoint in response to SNOW Network Adapter DELETE action <br>
+--Create ISE endpoint in response to ‘Network Adapter’ INSERT action if MAC address does not already exist in ISE <br>
 
 ## REQUIREMENTS:
 
