@@ -175,6 +175,12 @@ Now that the basic message format is created, we will create the individual call
   4. Click the "Test" button under Related Links and confirm the output looks like the following:
    ![](images/snowHTTPget4.png)
 
+### Create new HTTP Method called "DELETE_Endpoint"
+  **Name**: DELETE_Endpoint <br>
+  **HTTP Method**: GET <br>
+  **Endpoint**: https://<ISE>:9060/ers/config/endpoint/${GUIDendpoint} <br>
+  **Authentication Type**: Inherit from Parent <br>
+
 ### Create new HTTP Method called "PUT_Endpoint_Update"
 
   1. Set the following values (replicating steps from the previous method:
@@ -221,6 +227,39 @@ Now that the basic message format is created, we will create the individual call
 ### Verify ServiceNow + ISE Integration
 To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
  ![](images/snowHTTPputVerify.png)
+
+### Create new HTTP Method called "CREATE_Endpoint"
+Similarly to the PUT method you just created, create a new HTTP method with the following variables:
+**Name**: CREATE_Endpoint <br>
+**HTTP Method**: POST <br>
+**Endpoint HTTP Method**: https://<ISE>:9060/ers/config/endpoint <br>
+**Authentication**: Inherit from parent <br>
+Click HTTP Request tab <br>
+  **Use MID Server**: Your MID server <br>
+  **HTTP Headers**: Content-Type  application/json<br>
+  **HTTP Query Paramters**: 
+  ```json
+  {
+      "ERSEndPoint": {
+          "name": "${endpoint_name}",
+          "description": "${endpoint_desc}",
+          "mac": "${endpoint_mac}",
+          "staticProfileAssignment": false,
+          "customAttributes":{
+            "customAttributes" :{
+              "InventoryStatus" : ${InventoryStatus},
+              "SerialNumber": ${SerialNumber},
+              "SerialSource": "${SerialSource}"
+          }
+        }
+    }
+  }
+  ```
+
+  ### Verify all HTTP Methods have been created ###
+  Your methods should look like this below:
+  ![](images/snowAutomation13.png)
+
 
 ## STEP 7. Script Automation within ServiceNow
 
