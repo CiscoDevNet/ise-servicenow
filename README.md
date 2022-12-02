@@ -135,20 +135,19 @@ Now that the basic message format is created, we will create the individual call
 
 ### Create a new HTTP Method called "Get_GUID_By_MAC"
 
-  1. Set the Endpoint HTTP method to be https://<ISE>:9060/ers/config/endpoint
-  2. Set Authentication to "Inherit from parent" 
-  ![](images/snowRESTcall1.png)
-  3. Click the HTTP Request tab. For Use MID Server, click the search button to select your MID Server instance within ServiceNow that will run this request.
-  ![](images/snowRESTcall2.png)
-  4. Since HTTP headers are inherited from parent, we don't need to define them in this request.
-  5. Under the HTTP Query field, double-click to Insert a new row. For the name type "filter" and for the value, type "mac.EQ.${mac}". 
+  **Endpoint HTTP Method**: https://<ISE>:9060/ers/config/endpoint <br>
+  **Authentication**: Inherit from parent <br>
+  Click HTTP Request tab <br>
+  **Use MID Server**: Your MID server <br>
+  **HTTP Headers**: None  (natively inherited from parent) <br>
+  **HTTP Query**: <br>
+    **Name**: filter <br>
+    **Type**: mac.EQ.${mac} <br>
   ![](images/snowRESTcall3.png)
-  This value will reference a variable that we will now define.
-
-  6. Under Variable Substitutions, click New. In the next screen, enter "mac" for the name, leave Escape Type to "no escaping" and set the test value to our example MAC address of BB:BB:BB:BB:BB, and then click Submit. 
-  ![](images/snowRESTcall4.png)
-  ![](images/snowRESTcall5.png)
-  7. Now we can perform a test run of the MID server communication to the ISE PAN via ERS call. Under Related Links, click the "Test" button.
+  Variable Subsitutions <br>
+  **Name**: mac <br>
+  **Test Value**: <Your Test MAC Address> <br>
+  Links, click the "Test" button. <br>
   ![](images/snowRESTcall6.png)
 
   After a few moments, a new screen displays the Test Results including the GUID value (copy this returned output). 
@@ -231,17 +230,28 @@ Now that we have successfully tested the REST API calls from ServiceNow to updat
   Navigate to "System Definition -> Script Includes" and click "New", name it "ISE_Helper" , select the Accessible from "This Application scope only", check the box for "Active", and then use the script for "ISE Helper" located in this repo. The result should look similar to the screenshot below:
  ![](images/snowAutomation1.png)
 
-  2. Define the ServiceNow Business Rule
-  In this scenario, we want the ServiceNow process to run whenever a new Network Adapter entry is added to the ServiceNow CMDB. Other options can be selected per use case.
+  2. Define the ServiceNow Business Rule for Inserted / Updated Rcords
+  In this scenario, we want the ServiceNow process to run whenever a new Network Adapter entry is added or updated to the ServiceNow CMDB. We will create a separate rule for the Deletion of records.
   
   Navigate to "Business Rules" and click "New". Populate the following fields:
-  **Name**: ISE_Network_Adapter
-  **Active**: Enabled
-  **Advanced**: Enabled
-  **When to Run**: When "After" an "Insert"
+  **Name**: ISE_Network_Adapter <br>
+  **Table**: Network Adapter <br>
+  **Active**: Enabled <br>
+  **Advanced**: Enabled <br>
+  **When to Run**: When "After" an "Insert" <br>
   ![](images/snowAutomation2.png)
 
   Click on the "Advanced" tab and add script labeled "ISE_Network_Adapter" located in this repo.  This script will use the information from the Network_Adapter table, send it to the Script Class, and then return the results.
+
+  3. Define the ServiceNow Business Rule for Deleted Records 
+  Following the steps above in #2, create a new Business Rule and populate the following fields:
+  **Name**: ISE_Network_Adapter_Delete <br>
+  **Table**: Network Adapter <br>
+  **Active**: Enabled <br>
+  **Advanced**: Enabled <br>
+  **When to Run**: When "Before" an "Delete" <br>
+  ![](images/snowAutomation12.png)
+  Click on the "Advanced" tab and add the script labeled "ISE_Network_Adapter_Delete" located in this repo.  
 
 ## STEP 8. Testing the Overall Solution
 
