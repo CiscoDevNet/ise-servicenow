@@ -9,9 +9,15 @@ This guide is intended to show how to allow the ServiceNow platform to use infor
 A customer has an inventory of their computers in ServiceNow and would like to ensure that only those computers are allowed access to the network. ServiceNow will therefore inform Cisco ISE of the status of computer objects and ISE will have a policy to either drop ping (default) or allow access (if Computer is in the Inventory). In this case, the ServiceNow database will use the Status field with a value of "Installed"; to indicate a device as being in the inventory (see screenshot):
 ![](images/useCaseExample.png)
 
+v1.0
+--Update ISE endpoints with Custom Attributes in response to SNOW Network Adapter INSERT/UPDATE actions
+v2.0
+--Delete ISE endpoint in response to SNOW Network Adapter DELETE action
+--Create ISE endpoint in response to ‘Network Adapter’ INSERT action if MAC address does not already exist in ISE
+
 ## REQUIREMENTS:
 
-- ISE v2.4 or later (screenshots are ISE 3.1)
+- ISE v2.7 or later (screenshots are ISE 3.1)
 - ServiceNow Instance (Orlando or later)
 - ServiceNow MID-Server with access to ISE PSN (TCP 80/443/9060)
   - Instructions on how to install a MID Server can be found [here](https://docs.servicenow.com/bundle/quebec-servicenow-platform/page/product/mid-server/concept/mid-server-installation.html)
@@ -22,14 +28,15 @@ A customer has an inventory of their computers in ServiceNow and would like to e
 2. Enable ERS Gateway within ISE
 3. Create Custom Attributes within ISE
 4. Create new Policy Conditions and AuthZ Profile
-5. (Optional) Verify ERS Functionality via Postman
-6. Create MID Server app / Bind App to MID Server on Prem
-7. Create the REST API queries in ServiceNow
+5. Create MID Server app / Bind App to MID Server on Prem
+6. Create the REST API queries in ServiceNow
   - Get_GUI_By_MAC
   - Get_Endpoint_Details
   - Put_Endpoint_Update
-8. Script Automation within ServiceNow (Script Class and Business Rule)
-9. Testing the Overall Solution
+  - CREATE_Endpoint
+  - DELETE_Endpoint
+7. Script Automation within ServiceNow (Script Class and Business Rule)
+8. Testing the Overall Solution
 
 ## STEP 1. Create ERS Account in ISE
 
@@ -86,61 +93,7 @@ The resulting rules should look like the following:
 
 In this example, the AuthZ rule "DROP_PING" pushes a dACL that drops PING traffic for the workstation. However, this could be customized in a variety of ways including a redirect to a splash page that informs the user their device is not in the inventory.
 
-## STEP 5. Verify ERS Functionality via Postman
-
-Now that ISE rules/policies have been setup, let's test the functionality using Postman. Reminder that we will need to search for the MAC address of the endpoint for our inventory to obtain the GUID for the record within ISE. This GUID will then be used to gather additional details about the endpoint and/or update the endpoint record.
-
-[Click here for a tutorial on how to use Postman](https://learning.postman.com/docs/getting-started/introduction/)
-
-1. Create a new collection for ISE ERS connectivity.
-2. Create a new request inside the collection and name it Endpoint By MAC 
-    - 2a. Set the value of the request to "GET" with a URL of https://<ISE>:9060/ers/config/endpoint
-    - 2b. Under Params, add the key "filter"; with a value of "mac.EQ.<your mac>" which includes a MAC address in your ISE instance.
-    ![](images/postman1.png)
-    
-    The URL now should read: https://<ISE>:9060/ers/config/endpoint?filter=mac.EQ.BB:BB:BB:BB:BB:BB
-    - 2c. Set the Authorization to Basic Auth and populate the username/pwd details for the ERS Admin created in the ISE instance in Step 1 of this guide:
-    
-    ![](images/postman2.png)
-
-    - 2d. In the Headers section, add the following
-    ![](images/postman3.png)
-
-    - 2e. Click the "Send" button. The output should be similar to below.
-    ![](images/postman4).png)
-    
-    The ID returned is the GUID. We will need to copy this value for the next step.
-
-3. Click the ellipsis next to the existing GET request and create a duplicate, and name it "Endpoint by GUID"
-    - 3a. Set the URL value to https://<ISE>:9060/ers/config/endpoint/<GUID>
-    ![](images/postman5.png)
-
-    - 3b. Since you duplicated this request, the Authorization and Headers sections are already populated.
-    
-    - 3c. Click the "Send" button. The output should be similar to below:
-    ![](images/postman6.png)
-
-    NOTE: The Custom Attributes fields for this specific endpoint are returned with blank values.
-
-4. Click the ellipsis next to "Endpoint by GUID" and create a duplicate and name it "Update Endpoint by UID"
-    - 4a. Set the request type to "PUT" and the URL should remain in the same format as the previous "GET" request (ex. https://<ISE>:9060/ers/config/endpoint/<GUID>
-    
-    - 4b. We will now be sending additional information in the ERS message, so we need to modify the format. Click on the Headers section and add a value of "Content-Type" with value "application/json"
-    ![](images/postman7.png)
-    - 4c. Click on the "Body" section. Here we will add values to update for this endpoint including the "true" value for the InventoryStatus, a test SerialNumber value, and the "ServiceNow" for SerialSource.
-    ![](images/postman8.png)
-    - 4d Click the "Send" button to issue the update. The returned output shows the old values of the record as well as the new values after this update.
-    ![](images/postman9.png)
-
-5. Within the ISE GUI, verify that the updates are reflected in the endpoint (Context Visibility -> Endpoints) 
-![](images/postmanVerify1.png)
-
-6. Now that we know the ERS functionality is working, let's clear the Custom Attribute values (Edit Endpoint-> click "trash" icon next to each value, click Save") for this endpoint to reset it back to normal. 
-![](images/postmanVerify2.png)
-
-We will now perform the ServiceNow steps to do this same ERS update process.
-
-## STEP 6. Create New MID Server Application / Bind App to MID Server on Prem
+## STEP 5. Create New MID Server Application / Bind App to MID Server on Prem
 
 In ServiceNow, navigate to MID Server -> Applications.
 
@@ -154,14 +107,14 @@ This will be referenced later
 
 ![](images/midServer3.png)
 
-## STEP 7. Create the REST API Queries in ServiceNow
+## STEP 6. Create the REST API Queries in ServiceNow
 
-We now need to recreate the API calls we performed in Postman into the ServiceNow API engine. To do this, navigate to Outbound -> REST Message and click "New". This will be the basis of all ISE queries so name it something accordingly:
+We now need to recreate the API calls into the ServiceNow API engine. To do this, navigate to Outbound -> REST Message and click "New". This will be the basis of all ISE queries so name it something accordingly:
 
-**Name**: ISE-SVR
-**Accessible From**: This application only
-**Authentication – Type**: Basic
-**Endpoint**: https://<ISE>:9060/ers/config
+**Name**: ISE-SVR \
+**Accessible From**: This application only \
+**Authentication – Type**: Basic \
+**Endpoint**: https://<ISE>:9060/ers/config \
 
 ![](images/snowREST1.png)
 
@@ -269,7 +222,7 @@ Now that the basic message format is created, we will create the individual call
 To verify the integration worked correctly, once again navigate to Context Visibility -> Endpoints and pull up the same endpoint to see the attributes updated:
  ![](images/snowHTTPputVerify.png)
 
-## STEP 8. Script Automation within ServiceNow
+## STEP 7. Script Automation within ServiceNow
 
 Now that we have successfully tested the REST API calls from ServiceNow to update ISE, we need to automate this process based on ServiceNow workflows. To do this, we need to build two components: a **Script Class**, and a **Business Rule**.  The **Script Class** accepts details from the CMDB, calls the REST messages, and parses the output.  The **Business Rule** defines what actions within ServiceNow will trigger the **Script Class**.
 
@@ -289,7 +242,7 @@ Now that we have successfully tested the REST API calls from ServiceNow to updat
 
   Click on the "Advanced" tab and add script labeled "ISE_Network_Adapter" located in this repo.  This script will use the information from the Network_Adapter table, send it to the Script Class, and then return the results.
 
-## STEP 9. Testing the Overall Solution
+## STEP 8. Testing the Overall Solution
 
 Using our test MAC address from before, let's go back to the ISE dashboard and remove the custom attributes that exist for our test device, BB:BB:BB:BB:BB:BB.
 
