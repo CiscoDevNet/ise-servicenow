@@ -111,10 +111,10 @@ This will be referenced later
 
 We now need to recreate the API calls into the ServiceNow API engine. To do this, navigate to Outbound -> REST Message and click "New". This will be the basis of all ISE queries so name it something accordingly:
 
-**Name**: ISE-SVR \
-**Accessible From**: This application only \
-**Authentication – Type**: Basic \
-**Endpoint**: https://<ISE>:9060/ers/config \
+**Name**: ISE-SVR <br>
+**Accessible From**: This application only <br>
+**Authentication – Type**: Basic <br>
+**Endpoint**: https://<ISE>:9060/ers/config <br>
 
 ![](images/snowREST1.png)
 
@@ -159,18 +159,18 @@ Now that the basic message format is created, we will create the individual call
 ### Create new HTTP Method Called "Get_Endpoint_Details"
 
   1. Set the following values (replicating steps from the previous method:
-  **Name**: GET_Endpoint_Details
-  **HTTP Method**: GET
-  **Endpoint**: https://<ISE>:9060/ers/config/endpoint/${GUIDendpoint}
-  **Authentication Type**: Inherit from Parent
+  **Name**: GET_Endpoint_Details <br>
+  **HTTP Method**: GET <br>
+  **Endpoint**: https://<ISE>:9060/ers/config/endpoint/${GUIDendpoint} <br>
+  **Authentication Type**: Inherit from Parent <br>
    ![](images/snowHTTPget1.png)
 
   2. Click the HTTP Request tab and ensure the appropriate MID server is selected.
    ![](images/snowHTTPget2.png)
 
   3. Under variable Substitutions, click New. In the next screen, enter the following:
-  **Name**: GUIDendpoint
-  **Test Value**: <sample GUID for example MAC from above>
+  **Name**: GUIDendpoint <br>
+  **Test Value**: <sample GUID for example MAC from above> <br>
    ![](images/snowHTTPget3.png)
 
   4. Click the "Test" button under Related Links and confirm the output looks like the following:
@@ -207,10 +207,11 @@ Now that the basic message format is created, we will create the individual call
   ![](images/snowHTTPput3.png)
   
   4. Scroll down to the Variable Substitutions section. Here we will define (4) variables that will be used in this query (referenced in the code from the previous step):
-  **Name**: GUIDendpoint, **value** = GUID **value** from previous query ![](images/snowHTTPput4.png)
-  **Name**: Inventory Status, **value** = true
-  **Name**: SerialNumber, **value** = 987654 (Serial # different than Postman example)
-  **Name**: SerialSource, **value** = ServiceNow
+  **Name**: GUIDendpoint, **value** = GUID **value** from previous query <br>
+  ![](images/snowHTTPput4.png)
+  **Name**: Inventory Status, **value** = true <br>
+  **Name**: SerialNumber, **value** = 987654 (Serial # different than Postman example) <br>
+  **Name**: SerialSource, **value** = ServiceNow <br>
   
   The end result should look like this 
    ![](images/snowHTTPput5.png)
