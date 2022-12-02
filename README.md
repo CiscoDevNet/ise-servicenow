@@ -22,7 +22,7 @@ A customer has an inventory of their computers in ServiceNow and would like to e
 2. Enable ERS Gateway within ISE
 3. Create Custom Attributes within ISE
 4. Create new Policy Conditions and AuthZ Profile
-5. Verify ERS Functionality via Postman
+5. (Optional) Verify ERS Functionality via Postman
 6. Create MID Server app / Bind App to MID Server on Prem
 7. Create the REST API queries in ServiceNow
   - Get_GUI_By_MAC
