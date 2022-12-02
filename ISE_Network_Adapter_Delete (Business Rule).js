@@ -25,13 +25,21 @@
         
         //Run the DELETE API call using the retreived GUID
         DELresponse = si.fnDeleteEndpoint(GUIDendpoint);
-        
+        //gs.addInfoMessage(DELresponse);
+    
         if (DELresponse.toString() === '204') {
             gs.addInfoMessage("Updated ISE. Record deleted");
         } else {
             gs.addInfoMessage("Error deleting ISE endpoint " + current.mac_address);
         }
-    
+        /*
+        if(typeof DELresponse==="undefined") {
+            gs.addErrorMessage("Error deleting ISE endpoint " + current.mac_address + "");
+        } else {
+            gs.addInfoMessage("Updated ISE.  Record deleted");
+        }
+        */
+        
         current.u_correlation_last_check = gs.now().toString();
     } catch (err) {
         gs.addErrorMessage("Error retrieving ISE details for device " + current.mac_address + ".");
