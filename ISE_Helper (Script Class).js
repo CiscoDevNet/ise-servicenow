@@ -4,19 +4,21 @@ ISE_Helper.prototype = {
 
     fnUpdateISE: function(grNetworkAdapter, grComputer, event) {
         if (typeof(grNetworkAdapter.getUniqueValue()) == 'undefined') {
+//            gs.info('JRDEBUG: si  ISE_Helper - UNDEFINED0 - ' + grNetworkAdapter.getUniqueValue() + ' | ' + grComputer.getUniqueValue());
             var grLocalNA = new GlideRecord('cmdb_ci_network_adapter');
             grLocalNA.get(grNetworkAdapter);
             grNetworkAdapter = grLocalNA;
         }
         if (typeof(grComputer.getUniqueValue()) == 'undefined') {
+//            gs.info('JRDEBUG: si  ISE_Helper - UNDEFINED0 - ' + grNetworkAdapter.getUniqueValue() + ' | ' + grComputer.getUniqueValue());
             var grLocalComputer = new GlideRecord('cmdb_ci_computer');
             grLocalComputer.get(grComputer);
             grComputer = grLocalComputer;
         }
         var strSerial = grComputer.serial_number.toString();
 	
-	//--- THIS VARIABLE TO BE SUBSTITUTED BY COMPUTER OBJECT.  “Install = true”, all others “false”
-	var strInstallStatus = grComputer.install_status.toString();
+	//var strInstallStatus = '1';
+    var strInstallStatus = grComputer.install_status.toString();
         
 	var strInventoried = "false";
         var GUIDendpoint = "";
@@ -27,6 +29,7 @@ ISE_Helper.prototype = {
                 grNetworkAdapter.correlation_id = GUIDendpoint;
             }
         } else {
+            //                GUIDendpoint = this.fnParseGUID(getOBJviaMAC);
             GUIDendpoint = grNetworkAdapter.correlation_id.toString();
         }
         var strSerialSource = "ServiceNow";
@@ -43,6 +46,7 @@ ISE_Helper.prototype = {
         }
         var PUTResponse = this.fnPUTEndpointDetails(GUIDendpoint, strSerial, strSerialSource, strInventoried, event, grNetworkAdapter);
         if (typeof PUTResponse === "undefined") {
+            //            gs.addErrorMessage("Error retrieving ISE details for device " + grNetworkAdapter.mac_address + ".");
         }
         if ((PUTResponse.toString() === '404') && (event.parm1.toString() !== 'true')) {
             strInventoryDisplay = "Error finding endpoint in ISE. Retrying once...";
@@ -52,6 +56,7 @@ ISE_Helper.prototype = {
             strInventoryDisplay = strInventoryDisplay + " (refreshed correlation ID)";
         }
         grNetworkAdapter.u_correlation_last_check = gs.now().toString();
+        //		grNetworkAdapter.comments = "ISE: " + (new GlideDateTime()).getDisplayValueInternal() + " (" + grComputer.sys_updated_by + ") Status: " + strInventoryDisplay + "\r" + grNetworkAdapter.comments;
         grNetworkAdapter.comments = "ISE: " + (new GlideDateTime()).getDisplayValueInternal() + " " + strInventoryDisplay;
         grNetworkAdapter.autoSysFields(false); // records shouldn't receive system updates
         grNetworkAdapter.setWorkflow(false); // business rules shouldn't be run
@@ -60,6 +65,7 @@ ISE_Helper.prototype = {
         grNetworkAdapter.setWorkflow(true); // business rules shouldn't be run
     },
 
+    // get GUID of endpoint via MAC address
     fnGetGUIDviaMAC: function(strMAC) {
         try {
             var r = new sn_ws.RESTMessageV2('ISE-SVR', 'Get_GUI_By_MAC');
@@ -101,6 +107,36 @@ ISE_Helper.prototype = {
         }
     },
 
+	fnCreateEndpoint: function(endpointMAC, endpointDesc, endpointName) {
+        try {
+            var r = new sn_ws.RESTMessageV2('ISE-SVR', 'CREATE_Endpoint');
+            r.setStringParameterNoEscape('endpoint_mac',endpointMAC);
+            r.setStringParameterNoEscape('endpoint_desc',endpointDesc);
+            r.setStringParameterNoEscape('endpoint_name)',endpointName);
+            r.setEccParameter('skip_sensor', true);
+            var response = r.execute();
+            var responseBody = response.getBody();
+            var httpStatus = response.getStatusCode();
+            return httpStatus;
+        } catch (ex) {
+            var message = ex.message;
+        }
+    },
+	
+	fnDeleteEndpoint: function(GUIDendpoint) {
+        try {
+            var r = new sn_ws.RESTMessageV2('ISE-SVR', 'DELETE_Endpoint');
+            r.setStringParameterNoEscape('GUIDendpoint', GUIDendpoint);
+            r.setEccParameter('skip_sensor', true);
+            var response = r.execute();
+            var responseBody = response.getBody();
+            var httpStatus = response.getStatusCode();
+            return httpStatus;
+        } catch (ex) {
+            var message = ex.message;
+        }
+    },
+	
     fnPUTEndpointDetails: function(GUIDendpoint, SerialNumber, SerialSource, InventoryStatus, event, grNetworkAdapter) {
         try {
             var r = new sn_ws.RESTMessageV2('ISE-SVR', 'PUT_Endpoint_Update');
@@ -115,14 +151,13 @@ ISE_Helper.prototype = {
             if (httpStatus === 404) {
                 // only try to update once, otherwise we endless loop
                 if (event.parm1.toString() !== 'true') {
-		     //~~! Additional logic for adding event-queue based functionality
-                    //gs.eventQueue('sn.itsm.ise.update', grNetworkAdapter, true, grNetworkAdapter.mac_address);
+                    gs.eventQueue('au.itsm.ise.update', grNetworkAdapter, true, grNetworkAdapter.mac_address);
                 }
             }
-            //			return "ISE PUT success";
+            //return "ISE PUT success";
         } catch (ex) {
             var message = ex.message;
-            //			return "ISE PUT failed";
+            //return "ISE PUT failed";
         }
         return httpStatus;
     },
